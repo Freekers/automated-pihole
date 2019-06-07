@@ -114,6 +114,7 @@
         - docker-compose
         
   - name: Create directories if they don't exist
+    become: true
     file:
       path: "{{ item }}"
       state: directory
