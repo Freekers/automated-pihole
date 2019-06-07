@@ -1,4 +1,4 @@
-## Automated, self-updating, Pi-hole stack using unbound as recursive DNS server with Ansible
+## Automated, self-updating, Pi-hole stack using unbound as recursive DNS server
 
 This Ansible playbook installs a self updating Pi-hole stack from scratch:
 - You can choose between a Public Pi-hole or a Personal/Private one
