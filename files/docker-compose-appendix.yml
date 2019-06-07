@@ -1,0 +1,35 @@
+
+  nginx-proxy:
+   image: jwilder/nginx-proxy:alpine
+   restart: always
+   container_name: nginx-proxy
+   volumes:
+    - /opt/automated-pihole/certs:/etc/nginx/certs
+    - /opt/automated-pihole/vhost.d:/etc/nginx/vhost.d
+    - /opt/automated-pihole/html:/usr/share/nginx/html
+    - /var/run/docker.sock:/tmp/docker.sock:ro
+    - /opt/automated-pihole/nginx_error.log:/var/log/nginx/nginx_error.log
+   ports:
+    - "443:443/tcp"
+    - "80:80/tcp"
+   depends_on:
+    pihole:
+     condition: service_healthy
+   networks:
+    nginx-proxy:
+    pihole_net:
+       ipv4_address: 10.0.0.5
+
+  nginx-proxy-letsencrypt:
+   image: jrcs/letsencrypt-nginx-proxy-companion:latest
+   restart: always
+   container_name: nginx-proxy-letsencrypt
+   volumes:
+    - /var/run/docker.sock:/var/run/docker.sock:ro
+   volumes_from:
+    - nginx-proxy
+   depends_on:
+    - nginx-proxy
+   networks:
+    pihole_net:
+       ipv4_address: 10.0.0.6

@@ -1,0 +1,17 @@
+[pihole]
+#Server IP. 127.0.0.1 assumes you're running Ansible locally on the host itself.
+#Remove "ansible_connection=local" when running on a remote targer/server
+127.0.0.1 ansible_connection=local
+
+[pihole:vars]
+#Instance type: 'public' or 'private' Pi-hole (PUBLIC = ACCESSIBLE OVER INTERNET. BEWARE!!)
+type=private
+
+#Set to 'yes' when using Pi-hole's built in DHCP server (ONLY FOR PRIVATE PI-HOLES)
+dhcp=no
+
+#Automatically reboot system if any upgraded package requires it.
+autoreboot=true
+
+#Set automatic system reboot time. Only applies if 'autoreboot' is set to true
+autoreboottime=02:22

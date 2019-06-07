@@ -1,0 +1,72 @@
+version: "2.1"
+networks:
+  pihole_net:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 10.0.0.0/29
+
+services:
+  pihole:
+   image: pihole/pihole:latest
+   restart: always
+   container_name: pihole
+   hostname: ${HOSTNAME}
+   dns:
+    - 127.0.0.1
+    - 10.0.0.2
+   environment:
+    - TZ=${TIMEZONE}
+    - WEBPASSWORD=${WEBPASSWORD}
+    - DNS1=10.0.0.2
+    - DNS2=no
+    - VIRTUAL_HOST=${HOSTNAME}
+    - LETSENCRYPT_HOST=${HOSTNAME}
+    - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+    - VIRTUAL_PORT=80
+   volumes:
+    - /opt/automated-pihole/etc-pihole:/etc/pihole
+    - /opt/automated-pihole/etc-dnsmasq:/etc/dnsmasq.d
+    - /opt/automated-pihole/whitelist/:/opt/whitelist
+    - /opt/automated-pihole/pihole.log:/var/log/pihole.log
+    - /opt/automated-pihole/lighttpd_error.log:/var/log/lighttpd/error.log
+   depends_on:
+    - unbound
+   networks:
+     pihole_net:
+       ipv4_address: 10.0.0.3    
+   ports:
+    - "53:53/tcp"
+    - "53:53/udp"
+    - "80:80/tcp"
+    - "443:443/tcp"
+    
+  unbound:
+   image: secns/unbound:latest
+   restart: always
+   container_name: unbound
+   environment:
+    - DO_IPV6=no
+   volumes:
+    - /opt/automated-pihole/unbound/pi-hole.conf:/etc/unbound/unbound.conf.d/pi-hole.conf
+    - /opt/automated-pihole/unbound/root.hints:/var/lib/unbound/root.hints
+   networks:
+      pihole_net:
+        ipv4_address: 10.0.0.2
+
+  ouroboros:
+    image: pyouroboros/ouroboros:latest
+    container_name: ouroboros
+    hostname: ${HOSTNAME}
+    volumes:
+     - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+    environment:
+     - CLEANUP=true
+     - LOG_LEVEL=info
+     - SELF_UPDATE=true
+     - TZ=${TIMEZONE}
+     - CRON=${CRON_OUROBOROS}
+    networks:
+      pihole_net:
+        ipv4_address: 10.0.0.4
