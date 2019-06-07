@@ -157,6 +157,7 @@
   # Code below is ONLY ran when instance type is set to PRIVATE in 'hosts' file
       
   - name: Add DHCP port to Docker-Compose (User configurable)
+    become: true
     when: dhcp == "yes"
     lineinfile:
       dest: /opt/automated-pihole/docker-compose.yml
@@ -165,6 +166,7 @@
       firstmatch: yes
       
   - name: Add cap_add and NET_ADMIN to Docker-Compose (DHCP dependency)
+    become: true
     when: dhcp == "yes"
     blockinfile:
       path: /opt/automated-pihole/docker-compose.yml
@@ -181,10 +183,12 @@
    # Yes, this is super ugly but I couldn't get this to work using templates. 
    
   - name: Add nginx and letsencrypt to Docker-Compose (User configurable)
+    become: true
     when: type == "public"
     shell: cat {{ playbook_dir }}/files/docker-compose-appendix.yml >> /opt/automated-pihole/docker-compose.yml
     
   - name: Add expose section
+    become: true
     when: type == "public"
     lineinfile:
       dest: /opt/automated-pihole/docker-compose.yml
@@ -193,6 +197,7 @@
       firstmatch: yes
       
   - name: Remove port mapping for port 80, nginx reverse proxy will take over
+    become: true
     when: type == "public"
     replace:
       path: /opt/automated-pihole/docker-compose.yml
@@ -200,6 +205,7 @@
       before: '  unbound:'
       
   - name: Remove port mapping for port 443, nginx reverse proxy will take over
+    become: true
     when: type == "public"
     replace:
       path: /opt/automated-pihole/docker-compose.yml
@@ -207,6 +213,7 @@
       before: '  unbound:'
   
   - name: Expose port 80
+    become: true
     when: type == "public"
     lineinfile:
       dest: /opt/automated-pihole/docker-compose.yml
@@ -215,6 +222,7 @@
       firstmatch: yes
       
   - name: Add nginx-proxy network to Pihole
+    become: true
     when: type == "public"
     lineinfile:
       dest: /opt/automated-pihole/docker-compose.yml
@@ -223,6 +231,7 @@
       firstmatch: yes
       
   - name: Add nginx-proxy network to Docker
+    become: true
     when: type == "public"
     lineinfile:
       dest: /opt/automated-pihole/docker-compose.yml
@@ -231,6 +240,7 @@
       firstmatch: yes
       
   - name: Still adding nginx-proxy network to Docker
+    become: true
     when: type == "public"
     lineinfile:
       dest: /opt/automated-pihole/docker-compose.yml
@@ -239,6 +249,7 @@
       firstmatch: yes
       
   - name: Added the nginx-proxy network to Docker
+    become: true
     when: type == "public"
     lineinfile:
       dest: /opt/automated-pihole/docker-compose.yml
@@ -253,6 +264,7 @@
       name: nginxproxy_default
 
   - name: Touch nginx_error.log
+    become: true
     when: type == "public"
     file:
       path: /opt/automated-pihole/nginx_error.log
@@ -261,6 +273,7 @@
 #################################################################################
 
   - name: Copy Unbound config file
+    become: true
     copy:
       src: pi-hole.conf
       dest: /opt/automated-pihole/unbound/pi-hole.conf
@@ -318,6 +331,7 @@
       user: root
       
   - name: Download root.hints once manually
+    become: true
     get_url:
       url: https://www.internic.net/domain/named.root
       dest: /opt/automated-pihole/unbound/root.hints
@@ -332,6 +346,7 @@
  
    # Deploy auto-updating Whitelist
   - name: Checkout Whitelist Repo
+    become: true
     git:
       repo: https://github.com/Freekers/whitelist.git
       dest: /opt/automated-pihole/whitelist
@@ -379,6 +394,7 @@
       - fail2ban
       
   - name: Touch auth.log
+    become: true
     file:
       path: /var/log/auth.log
       state: touch
@@ -531,6 +547,7 @@
 
   # Pack it up, we're done here  
   - name: Use Pihole as resolver for localhost
+    become: true
     replace:
       path: /etc/resolvconf/resolv.conf.d/head
       regexp: 'nameserver 80.80.80.80'
