@@ -125,12 +125,14 @@
       - /opt/automated-pihole/unbound
       
   - name: Touch pihole.log
+    become: true
     file:
       path: /opt/automated-pihole/pihole.log
       state: touch
  
  # For some reason, this requires at least chmod 666 to work, no clue why. 
   - name: Touch lighttpd_error.log
+    become: true
     file:
       path: /opt/automated-pihole/lighttpd_error.log
       state: touch
@@ -139,11 +141,13 @@
       
   # Deploy Pi-hole and Ouroboros using Docker-Compose
   - name: Copy .env file
+    become: true
     copy:
       src: .env
       dest: /opt/automated-pihole/.env
       
   - name: Copy Docker Compose
+    become: true
     copy:
       src: docker-compose.yml
       dest: /opt/automated-pihole/docker-compose.yml
