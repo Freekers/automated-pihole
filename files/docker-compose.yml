@@ -11,7 +11,7 @@ services:
    image: pihole/pihole:latest
    restart: always
    container_name: pihole
-   hostname: ${HOSTNAME}
+   hostname: ${CUSTOM_NAME}
    dns:
     - 127.0.0.1
     - 10.0.0.2
