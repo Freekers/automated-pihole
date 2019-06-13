@@ -26,8 +26,8 @@
          - timezone
          - cron_ouroboros
          - webpassword
+         - custom_name
          - hostname
-         - server_wan_ip
          - letsencrypt_email
 
   tasks:
@@ -280,16 +280,6 @@
       path: /opt/automated-pihole/nginx_error.log
       state: touch
       
-  - name: Add DNS entry to dnsmasq conf for Pi-hole domainname
-    when: type == "public"
-    become: true
-    blockinfile:
-      path: /opt/automated-pihole/etc-dnsmasq/{{ hostname }}.conf
-      block: |
-       address=/{{ hostname }}/{{ server_wan_ip }}
-      insertafter: EOF
-      create: yes
-      
 #################################################################################
 
   - name: Copy Unbound config file
@@ -413,7 +403,14 @@
       - rsyslog
       - fail2ban
       
-  - name: Touch auth.log
+  - name: Check if auth.log exists
+    when: type == "public"
+    become: true
+    stat:
+      path: /var/log/auth.log
+    register: stat_result
+
+  - name: Create the auth.log, if it doesnt exist already
     become: true
     file:
       path: /var/log/auth.log
@@ -421,6 +418,9 @@
       mode: '0640'
       owner: syslog
       group: adm
+    when: 
+      - stat_result.stat.exists == False 
+      - type == "public"
   
   # Basic protection against DNS Amplification attacks 
   - name: Basic protection against DNS Amplification attacks using fail2ban
