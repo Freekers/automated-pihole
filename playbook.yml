@@ -411,7 +411,6 @@
     register: stat_result
 
   - name: Create the auth.log, if it doesnt exist already
-    when: type == "public"
     become: true
     file:
       path: /var/log/auth.log
@@ -419,7 +418,9 @@
       mode: '0640'
       owner: syslog
       group: adm
-    when: stat_result.stat.exists == False 
+    when: 
+      - stat_result.stat.exists == False 
+      - type == "public"
   
   # Basic protection against DNS Amplification attacks 
   - name: Basic protection against DNS Amplification attacks using fail2ban
