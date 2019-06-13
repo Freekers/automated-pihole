@@ -240,15 +240,6 @@
       insertafter: '    - VIRTUAL_PORT=80'
       firstmatch: yes
       
-  - name: Add fix for Pihole domainname resolution
-    become: true
-    when: type == "public"
-    lineinfile:
-      dest: /opt/automated-pihole/docker-compose.yml
-      line: '    - /opt/automated-pihole/etc-dnsmasq/{{ hostname }}.conf:/etc/dnsmasq.d/{{ hostname }}.conf'
-      insertafter: '    - /opt/automated-pihole/lighttpd_error.log:/var/log/lighttpd/error.log'
-      firstmatch: yes
-      
   - name: Add nginx-proxy network to Docker
     become: true
     when: type == "public"
