@@ -245,8 +245,8 @@
     when: type == "public"
     lineinfile:
       dest: /opt/automated-pihole/docker-compose.yml
-      line: '    - /opt/automated-pihole/lighttpd_error.log:/var/log/lighttpd/error.log'
-      insertafter: '    - /opt/automated-pihole/etc-dnsmasq/{{ hostname }}.conf:/etc/dnsmasq.d/{{ hostname }}.conf'
+      line: '    - /opt/automated-pihole/etc-dnsmasq/{{ hostname }}.conf:/etc/dnsmasq.d/{{ hostname }}.conf'
+      insertafter: '    - /opt/automated-pihole/lighttpd_error.log:/var/log/lighttpd/error.log'
       firstmatch: yes
       
   - name: Add nginx-proxy network to Docker
