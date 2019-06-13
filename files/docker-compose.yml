@@ -11,7 +11,7 @@ services:
    image: pihole/pihole:latest
    restart: always
    container_name: pihole
-   hostname: ${HOSTNAME}
+   hostname: ${CUSTOM_NAME}
    dns:
     - 127.0.0.1
     - 10.0.0.2
@@ -47,6 +47,7 @@ services:
    container_name: unbound
    environment:
     - DO_IPV6=no
+    - HIDE_VERSION=yes
    volumes:
     - /opt/automated-pihole/unbound/pi-hole.conf:/etc/unbound/unbound.conf.d/pi-hole.conf
     - /opt/automated-pihole/unbound/root.hints:/var/lib/unbound/root.hints

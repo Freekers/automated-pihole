@@ -1,6 +1,6 @@
 
   nginx-proxy:
-   image: jwilder/nginx-proxy:alpine
+   image: freekers/nginx-proxy:alpine
    restart: always
    container_name: nginx-proxy
    volumes:
