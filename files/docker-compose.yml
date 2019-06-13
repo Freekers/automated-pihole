@@ -47,6 +47,7 @@ services:
    container_name: unbound
    environment:
     - DO_IPV6=no
+    - HIDE_VERSION=yes
    volumes:
     - /opt/automated-pihole/unbound/pi-hole.conf:/etc/unbound/unbound.conf.d/pi-hole.conf
     - /opt/automated-pihole/unbound/root.hints:/var/lib/unbound/root.hints
