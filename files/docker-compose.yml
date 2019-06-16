@@ -1,4 +1,4 @@
-version: "2.1"
+version: "3.5"
 networks:
   pihole_net:
     driver: bridge
@@ -12,6 +12,7 @@ services:
    restart: always
    container_name: pihole
    hostname: ${CUSTOM_NAME}
+   shm_size: 512m
    dns:
     - 127.0.0.1
     - 10.0.0.2
