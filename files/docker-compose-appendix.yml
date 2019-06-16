@@ -13,8 +13,7 @@
     - "443:443/tcp"
     - "80:80/tcp"
    depends_on:
-    pihole:
-     condition: service_healthy
+    - pihole
    networks:
     nginx-proxy:
     pihole_net:
@@ -25,9 +24,12 @@
    restart: always
    container_name: nginx-proxy-letsencrypt
    volumes:
+    - /opt/automated-pihole/certs:/etc/nginx/certs
+    - /opt/automated-pihole/vhost.d:/etc/nginx/vhost.d
+    - /opt/automated-pihole/html:/usr/share/nginx/html
     - /var/run/docker.sock:/var/run/docker.sock:ro
-   volumes_from:
-    - nginx-proxy
+   environment:
+    - NGINX_PROXY_CONTAINER=nginx-proxy
    depends_on:
     - nginx-proxy
    networks:
