@@ -31,6 +31,8 @@ services:
     - /opt/automated-pihole/whitelist/:/opt/whitelist
     - /opt/automated-pihole/pihole.log:/var/log/pihole.log
     - /opt/automated-pihole/lighttpd_error.log:/var/log/lighttpd/error.log
+    # The file below cannot reside in the etc-dnsmasq directory because of filename collision
+    - /opt/automated-pihole/advanced-01-pihole.conf:/etc/.pihole/advanced/01-pihole.conf
    depends_on:
     - unbound
    networks:

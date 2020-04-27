@@ -21,14 +21,14 @@
 
 - hosts: pihole
   vars:
-      env_path: '{{ playbook_dir }}/files/.env'
-      values:
-         - timezone
-         - cron_ouroboros
-         - webpassword
-         - custom_name
-         - hostname
-         - letsencrypt_email
+    env_path: '{{ playbook_dir }}/files/.env'
+    values:
+       - timezone
+       - cron_ouroboros
+       - webpassword
+       - custom_name
+       - hostname
+       - letsencrypt_email
 
   tasks:
   - name: Validate variables
@@ -53,9 +53,17 @@
       - git
       - resolvconf
       - tzdata
+      - python3-pip
+      - python3-setuptools
+
+  - name: install galaxy roles
+    command: ansible-galaxy install -r "{{ playbook_dir }}/requirements.yml"
+    delegate_to: localhost
+    become: false
 
   # Set timezone (yes, all this code is needed for that...)
   - name: Read values from Docker environment file
+    delegate_to: localhost
     shell: "source {{ env_path }}; echo ${{ item|upper }}"
     register: output
     with_items: "{{ values }}"
@@ -77,43 +85,23 @@
     timezone:
       name: "{{ timezone }}"
        
-  # Install Docker
-  - name: Install Docker dependencies
+  - block:
+      - name: Install Docker and docker-compose
+        include_role:
+          name: geerlingguy.docker
+        vars:
+         - docker_package_state: latest
+         - docker_install_compose: true
+         - docker_compose_version: "1.25.5"
     become: true
-    apt:
-      name: "{{ packages }}"
-    vars:
-      packages:
-      - apt-transport-https
-      - ca-certificates
-      - curl
-      - gnupg-agent
-      - software-properties-common
 
-  - name: Add Docker apt key
+  - name: Install docker and docker-compose, for use with Ansible docker module
     become: true
-    apt_key:
-      url: https://download.docker.com/linux/ubuntu/gpg
-      state: present
+    pip:
+      name: 
+        - docker
+        - docker-compose      
 
-  - name: Add Docker APT repository
-    become: true
-    apt_repository:
-      repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable
-      state: present
-      update_cache: true
-
-  - name: Install Docker
-    become: true
-    apt:
-      name: "{{ packages }}"
-    vars:
-      packages:
-        - docker-ce
-        - docker-ce-cli
-        - containerd.io
-        - docker-compose
-        
   - name: Create directories if they don't exist
     become: true
     file:
@@ -139,7 +127,6 @@
       state: touch
       mode: '0666'
       
-      
   # Deploy Pi-hole and Ouroboros using Docker-Compose
   - name: Copy .env file
     become: true
@@ -152,6 +139,12 @@
     copy:
       src: docker-compose.yml
       dest: /opt/automated-pihole/docker-compose.yml
+
+  - name: Copy advanced-01-pihole config file
+    become: true
+    copy:
+      src: advanced-01-pihole.conf
+      dest: /opt/automated-pihole/advanced-01-pihole.conf
       
 #################################################################################    
 
@@ -182,11 +175,25 @@
 
    # Code below is ONLY ran when instance type is set to PUBLIC in 'hosts' file
    # Yes, this is super ugly but I couldn't get this to work using templates. 
-   
+
+  - name: Copy Docker Compose Appendix
+    become: true
+    when: type == "public"
+    copy:
+      src: docker-compose-appendix.yml
+      dest: /tmp/docker-compose-appendix.yml
+     
   - name: Add nginx and letsencrypt to Docker-Compose (User configurable)
     become: true
     when: type == "public"
-    shell: cat {{ playbook_dir }}/files/docker-compose-appendix.yml >> /opt/automated-pihole/docker-compose.yml
+    shell: cat /tmp/docker-compose-appendix.yml >> /opt/automated-pihole/docker-compose.yml
+
+  - name: Remove Temporary Docker Compose Appendix
+    become: true
+    when: type == "public"
+    file:
+      path: /tmp/docker-compose-appendix.yml
+      state: absent
     
   - name: Add expose section
     become: true
@@ -345,15 +352,13 @@
     get_url:
       url: https://www.internic.net/domain/named.root
       dest: /opt/automated-pihole/unbound/root.hints
-      
-   
+
   - name: Deploy Stack using Docker Compose
     become: true
     docker_service:
       project_src: /opt/automated-pihole
       state: present
-      
- 
+
    # Deploy auto-updating Whitelist
   - name: Checkout Whitelist Repo
     become: true
@@ -403,14 +408,7 @@
       - rsyslog
       - fail2ban
       
-  - name: Check if auth.log exists
-    when: type == "public"
-    become: true
-    stat:
-      path: /var/log/auth.log
-    register: stat_result
-
-  - name: Create the auth.log, if it doesnt exist already
+  - name: Create auth.log, if it doesnt exist already
     become: true
     file:
       path: /var/log/auth.log
@@ -419,7 +417,6 @@
       owner: syslog
       group: adm
     when: 
-      - stat_result.stat.exists == False 
       - type == "public"
   
   # Basic protection against DNS Amplification attacks 
@@ -499,45 +496,18 @@
       create: yes
 
   # Firewall Rules
-  - name: Allow SSH in firewall
+  - name: Allow services in Firewall
     when: type == "public"
     become: true
     ufw:
       rule: allow
-      port: "22"
-      proto: tcp
-      
-  - name: Allow DNS TCP in firewall
-    when: type == "public"
-    become: true
-    ufw:
-      rule: allow
-      port: "53"
-      proto: tcp
-      
-  - name: Allow DNS UDP in firewall
-    when: type == "public"
-    become: true
-    ufw:
-      rule: allow
-      port: "53"
-      proto: udp
-      
-  - name: Allow HTTP in firewall
-    when: type == "public"
-    become: true
-    ufw:
-      rule: allow
-      port: "80"
-      proto: tcp
-      
-  - name: Allow HTTPS in firewall
-    when: type == "public"
-    become: true
-    ufw:
-      rule: allow
-      port: "443"
-      proto: tcp
+      proto: any
+      port: '{{ item }}'
+    loop:
+      - "22"
+      - "53"
+      - "80"
+      - "443"
       
   - name: Set default firewall policy and start on boot
     when: type == "public"
@@ -578,18 +548,14 @@
       
   - name: Execute Whitelist script once manually (also runs pihole updateGravity)
     become: true
-    command: docker exec -d pihole '/opt/whitelist/scripts/whitelist.sh'    
- 
-  - name: Remove useless packages from the cache
+    command: docker exec -d pihole '/opt/whitelist/scripts/whitelist.sh'
+    
+  - name: Remove useless packages from the cache and dependencies that are no longer required
     become: true
     apt:
       autoclean: yes
-
-  - name: Remove dependencies that are no longer required
-    become: true
-    apt:
       autoremove: yes
-
+ 
   # Configure Unattended (Security) Updates for OS
 - hosts: pihole  
   roles:
