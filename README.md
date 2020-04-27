@@ -50,6 +50,7 @@ The `docker-compose.yml` file will be located at `/opt/automated-pihole` after i
 - [nginx-proxy](https://github.com/jwilder/nginx-proxy) Docker image by jwilder
 - [letsencrypt-nginx-proxy-companion](https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion) Docker image by JrCs
 - [Unattended-Upgrades](https://github.com/jnv/ansible-role-unattended-upgrades#unattended-upgrades-role-for-ansible) Role for Ansible by jnv
+- [Docker](https://github.com/geerlingguy/ansible-role-docker) Role for Ansible by geerlingguy
 - [pihole-fail2ban](https://github.com/goncalopereira/pihole-fail2ban) by goncalopereira
 - [dbl.oisd.nl](https://dbl.oisd.nl) blocklist by [sjhgvr](https://www.reddit.com/user/sjhgvr)
 - [Commonly white listed domains for Pi-Hole](https://github.com/Freekers/whitelist) by anudeepND & Freekers
@@ -66,5 +67,6 @@ Unless otherwise specified, all code is released under the GNU General Public Li
 - unbound: [Apache 2.0](https://github.com/obi12341/docker-unbound/blob/master/LICENSE)
 - nginx-proxy: [MIT](https://github.com/jwilder/nginx-proxy/blob/master/LICENSE)
 - letsencrypt-nginx-proxy-companion: [MIT](https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion/blob/master/LICENSE)
-- Unattended-Upgrades: [GPL 2.0](https://github.com/jnv/ansible-role-unattended-upgrades/blob/master/LICENSE) 
+- Unattended-Upgrades: [GPL 2.0](https://github.com/jnv/ansible-role-unattended-upgrades/blob/master/LICENSE)
+- Ansible Role - Docker: [MIT](https://github.com/geerlingguy/ansible-role-docker/blob/master/LICENSE)
 - whitelist: [MIT](https://github.com/Freekers/whitelist/blob/master/LICENSE)

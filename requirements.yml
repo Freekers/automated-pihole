@@ -1,1 +1,2 @@
 - src: jnv.unattended-upgrades
+- src: geerlingguy.docker
