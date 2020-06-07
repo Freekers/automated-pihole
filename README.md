@@ -1,3 +1,6 @@
+⚠️⚠️⚠️ ***Please note: This playbook has been deprecated in favor of [ansible-adguard](https://github.com/Freekers/ansible-adguard)*** ⚠️⚠️⚠️
+
+
 ## Automated, self-updating, Pi-hole stack using unbound as recursive DNS server
 
 This Ansible playbook installs a self updating Pi-hole stack from scratch:
